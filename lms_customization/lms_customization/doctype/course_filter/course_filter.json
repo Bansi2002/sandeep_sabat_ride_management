@@ -1,0 +1,41 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-05-20 16:43:13.895624",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "department"
+ ],
+ "fields": [
+  {
+   "fieldname": "department",
+   "fieldtype": "Table",
+   "label": "Department",
+   "options": "Filter Item"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-05-21 15:16:31.016002",
+ "modified_by": "Administrator",
+ "module": "Lms Customization",
+ "name": "Course Filter",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

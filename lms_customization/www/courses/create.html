@@ -1,0 +1,310 @@
+{% extends "lms/templates/lms_base.html" %}
+{% block title %}
+{{ course.title if course and course.title else _("New Course") }}
+{% endblock %}
+
+{% block page_content %}
+<script src="/assets/lms_customization/js/restrict_copy_paste.js"></script>
+<script>
+    function displayMessageInModal(message) {
+        const modalBody = document.getElementById('modal-body');
+        modalBody.innerText = message;
+        $('#myModal').modal('show'); // Show the modal
+    }
+
+    function send_email_notifications(user_ids, course_name) {
+        frappe.call({
+            method: 'lms_customization.lms_customization.customization.lms_course.docevents.utility_functions.send_emails',
+            args: {
+                user_ids: user_ids,
+                course_name: course_name
+            },
+            callback: function (r) {
+                    displayMessageInModal(r.message);
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const sendEmailButton = document.getElementById('send-email-button');
+        if (sendEmailButton) {
+            sendEmailButton.addEventListener('click', function () {
+                const department = document.getElementById('department').value;
+                if (department) {
+                    frappe.call({
+                        method: 'frappe.client.get_list',
+                        args: {
+                            doctype: 'Employee',
+                            filters: {
+                                department: department
+                            },
+                            fields: ['user_id']
+                        },
+                        callback: function (r) {
+                            if (r.message && r.message.length > 0) {
+                                let user_ids = r.message.map(emp => emp.user_id);
+                                send_email_notifications(user_ids, '{{ course.name }}');
+                            } else {
+                                displayMessageInModal('No employees found in the specified department');
+                            }
+                        }
+                    });
+                } else {
+                    displayMessageInModal('Please specify a department');
+                }
+            });
+        }
+    });
+</script>
+
+<main class="common-page-style">
+    {{ Header() }}
+    <div class="container form-width">
+        {{ CreateCourse() }}
+    </div>
+    <!-- Modal -->
+    <div class="modal" id="myModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h4 class="modal-title">Message</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <!-- Modal body -->
+                <div class="modal-body" id="modal-body">
+                    <!-- Message will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% macro Header() %}
+<header class="sticky">
+    <div class="container form-width">
+        <div class="edit-header">
+            <div class="page-title"> {{ _("Course Details") }} </div>
+            <div class="align-self-center">
+                {% if course.name %}
+                <button class="btn btn-default btn-sm mr-2" id="send-email-button">
+                    {{ _("Send Email") }}
+                </button>
+                <a class="btn btn-default btn-sm mr-2" href="/courses/{{ course.name }}">
+                    {{ _("Back to Course") }}
+                </a>
+                <a class="btn btn-default btn-sm mr-2" href="/courses/{{ course.name }}/outline">
+                    {{ _("Course Outline") }}
+                </a>
+                {% endif %}
+                <button class="btn btn-primary btn-sm btn-save-course">
+                    {{ _("Save") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+{% endmacro %}
+
+{% macro CreateCourse() %}
+<div class="field-parent">
+    <div class="field-group">
+        <div>
+            <div class="field-label reqd">
+                {{ _("Title") }}
+            </div>
+            <div class="field-description">
+                {{ _("Something Short and Concise") }}
+            </div>
+        </div>
+        <div class="">
+            <input id="title" type="text" class="field-input" {% if course.title %} data-course="{{ course.name }}"
+                value="{{ course.title }}" {% endif %}>
+        </div>
+    </div>
+    <div class="field-group">
+        <div>
+            <div class="field-label">
+                {{ _("Department") }}
+            </div>
+            <div class="field-description">
+                {{ _("Department Based") }}
+            </div>
+            <select class="field-input" id="department">
+                <option></option>
+                {% for department in course.department %}
+                <option value="{{ department }}" {% if department==course.custom_department %} selected {% endif %}>
+                    {{ department }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="field-group">
+        <div>
+            <div class="field-label">
+                {{ _("LMS Category") }}
+            </div>
+            <div class="field-description">
+                {{ _("Category Based") }}
+            </div>
+            <select class="field-input" id="lms_category">
+                <option></option>
+                {% for category in course.lms_category %}
+                <option value="{{ category }}" {% if category==course.custom_lms_category %} selected {% endif %}>
+                    {{ category }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="field-group">
+        <div>
+            <div class="field-label reqd">
+                {{ _("Short Introduction") }}
+            </div>
+            <div class="field-description">
+                {{ _("A one line brief description") }}
+            </div>
+        </div>
+        <div class="">
+            <input id="intro" type="text" class="field-input" {% if course.short_introduction %}
+                value="{{ course.short_introduction }}" {% endif %}>
+        </div>
+    </div>
+    <div class="field-group">
+        <div>
+            <div class="field-label reqd">
+                {{ _("Course Description") }}
+            </div>
+            <div class="field-description">
+                {{ _("Add a detailed description to provide more information about your course.") }}
+            </div>
+        </div>
+        <div id="description" class=""></div>
+        {% if course.description %}
+        <div id="description-data" class="hide">
+            {{ course.description }}
+        </div>
+        {% endif %}
+    </div>
+    <div class="field-group">
+        <div>
+            <div class="field-label">
+                {{ _("Preview Video ID") }}
+            </div>
+            <div class="field-description">
+                {{ _("Enter the Preview Video ID. The ID is the part of the URL after <code>watch?v=</code>. For
+                example, if the URL is <code>https://www.youtube.com/watch?v=QH2-TGUlwu4</code>, the ID is
+                <code>QH2-TGUlwu4</code>") }}
+            </div>
+        </div>
+        <div class="">
+            <input id="video-link" type="text" class="field-input" {% if course.video_link %}
+                value="{{ course.video_link }}" {% endif %}>
+        </div>
+    </div>
+    <div class="field-group">
+        <div>
+            <div class="field-label">
+                {{ _("Tags") }}
+            </div>
+            <div class="field-description">
+                {{ _("Tags act as search keywords. They also appear on the Course Card and Course Detail page") }}
+            </div>
+        </div>
+        <div class="tags field-input">
+            {% for tag in get_tags(course.name) %}
+            <button class="btn btn-secondary btn-sm mr-2 text-uppercase">
+                {{ tag }}
+                <span class="btn-remove">
+                    <svg class="icon icon-sm">
+                        <use class="" href="#icon-close"></use>
+                    </svg>
+                </span>
+            </button>
+            {% endfor %}
+            <input type="text" class="invisible-input" id="tags-input">
+        </div>
+    </div>
+    {% if is_moderator %}
+    <div class="field-group vertically-center">
+        <label for="published" class="vertically-center mb-0">
+            <input type="checkbox" id="published" {% if course.published %} checked {% endif %}>
+            {{ _("Published") }}
+        </label>
+        <label for="upcoming" class="vertically-center mb-0 ml-20">
+            <input type="checkbox" id="upcoming" {% if course.upcoming %} checked {% endif %}>
+            {{ _("Upcoming") }}
+        </label>
+    </div>
+    {% endif %}
+    <div class="field-group">
+        <div>
+            <div class="field-label">
+                {{ _("Course Image") }}
+            </div>
+            <div class="field-description">
+                {{ _("Image will appear on the Course Card") }}
+            </div>
+        </div>
+        <div class="">
+            <button class="btn btn-secondary btn-sm btn-upload mt-2">
+                {{ _("Upload Image") }}
+            </button>
+        </div>
+        <img {% if course.image %} class="image-preview" src="{{ course.image }}" {% endif %}>
+    </div>
+    <div class="field-group">
+        <label for="paid_course" class="vertically-center mb-0">
+            <input type="checkbox" id="paid-course" {% if course.paid_course %} checked {% endif %}>
+            {{ _("Paid Course") }}
+        </label>
+    </div>
+    <div class="field-group price-field {% if not course.paid_course %} hide {% endif %}">
+        <div class="field-label {% if course.paid_course %} reqd {% endif %}">
+            {{ _("Course Price") }}
+        </div>
+        <div class="field-description">
+            {{ _("The price of this course.") }}
+        </div>
+        <div class="">
+            <input id="course-price" type="number" class="field-input" {% if course.course_price %}
+                value="{{ course.course_price }}" {% endif %}>
+        </div>
+    </div>
+    <div class="field-group price-field {% if not course.paid_course %} hide {% endif %}">
+        <div class="field-label {% if course.paid_course %} reqd {% endif %}">
+            {{ _("Currency") }}
+        </div>
+        <div class="field-description">
+            {{ _("The currency in which users will pay for this course.") }}
+        </div>
+        <select class="field-input" id="currency">
+            <option></option>
+            {% for currency in currencies %}
+            <option value="{{ currency }}" {% if currency==course.currency %} selected {% endif %}>
+                {{ currency }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field-group">
+        <div class="field-label">
+            {{ _("Instructor") }}
+        </div>
+        <div class="mt-2">
+            {{ widgets.Avatar(member=member, avatar_class="avatar-medium") }}
+            <span class="ml-2">
+                {{ member.full_name }}
+            </span>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{%- block script %}
+{{ super() }}
+{{ include_script('controls.bundle.js') }}
+{% endblock %}

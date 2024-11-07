@@ -1,0 +1,189 @@
+{% set chapters = get_chapters(course.name) %}
+{% set is_instructor = is_instructor(course.name) %}
+
+{% if chapters | length %}
+<div class="course-home-outline">
+
+    {% if not lesson_page %}
+    <div class="page-title mb-8" id="outline-heading" data-course="{{ course.name }}">
+        {{ _("Course Content test") }}
+    </div>
+    {% endif %}
+
+    <!-- Message container for displaying alerts -->
+    <div id="message-container" class="message-container"></div>
+
+    {% if chapters | length %}
+    <div>
+    {% for chapter_index, chapter in enumerate(chapters) %}
+    {% set lessons = get_lessons(course.name, chapter) %}
+
+    <div class="chapter-parent" data-chapter="{{ chapter.name }}">
+
+        <div class="chapter-title" data-toggle="collapse" aria-expanded="false"
+        data-target="#{{ get_slugified_chapter_title(chapter.title) }}">
+
+            <img class="chapter-icon" src="/assets/lms/icons/chevron-right.svg">
+            <div class="chapter-title-main">
+                {{ chapter.title }}
+            </div>
+        </div>
+
+        <div class="chapter-content collapse navbar-collapse" id="{{ get_slugified_chapter_title(chapter.title) }}">
+
+            {% if chapter.description %}
+            <div class="chapter-description">
+                {{ chapter.description }}
+            </div>
+            {% endif %}
+
+            <div class="lessons">
+
+                {% if lessons | length %}
+
+                {% for lesson_index, lesson in enumerate(lessons) %}
+                {% set active = membership.current_lesson == lesson.name %}
+                {% set previous_lesson_complete = false %}
+                {% if lesson_index > 0 %}
+                    {% set previous_lesson_complete = get_progress(course.name, lessons[lesson_index-1].name) == 'Complete' %}
+                {% elif chapter_index > 0 %}
+                    {% set previous_lesson_complete = get_progress(course.name, get_lessons(course.name, chapters[chapter_index-1])[-1].name) == 'Complete' %}
+                {% endif %}
+
+                <div data-lesson="{{ lesson.name }}" class="lesson-info {% if active %} active-lesson {% endif %}">
+
+                {% if membership or lesson.include_in_preview or is_instructor or has_course_moderator_role() %}
+                <a class="lesson-links"
+                href="{{ get_lesson_url(course.name, lesson.number) }}{% if classname %}?class={{ classname }}{% endif %}{{course.query_parameter}}"
+                data-lesson-index="{{ lesson_index }}"
+                data-chapter-index="{{ chapter_index }}"
+                data-previous-lesson-complete="{{ previous_lesson_complete }}"
+                {% if is_instructor and not lesson.include_in_preview %}
+                title="{{ _('This lesson is not available for preview. As you are the Instructor of the course only you can see it.') }}"
+                {% endif %}>
+
+                    <svg class="icon icon-sm mr-2">
+                        <use class="" href="#{{ lesson.icon }}">
+                    </svg>
+
+                    <span>{{ lesson.title }}</span>
+
+                    {% if membership %}
+                    <svg class="icon icon-md lesson-progress-tick ml-auto {{ get_progress(course.name, lesson.name) != 'Complete' and 'hide' }}">
+                        <use class="" href="#icon-success">
+                    </svg>
+                    {% endif %}
+
+                </a>
+
+                {% else %}
+                <div class="no-preview" title="This lesson is not available for preview">
+                    <div class="lesson-links">
+                    <svg class="icon icon-sm mr-2">
+                        <use class="" href="#icon-lock-gray">
+                    </svg>
+                    <div>{{ lesson.title }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                </div>
+                {% endfor %}
+
+            {% endif %}
+            </div>
+
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+
+    {% endif %}
+
+</div>
+{% endif %}
+
+{% if chapters | length %}
+<!-- No Preview Modal -->
+{{ widgets.NoPreviewModal(course=course, membership=membership) }}
+
+{% endif %}
+
+<!-- Add CSS for message container -->
+<style>
+    .message-container {
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+        display: none; /* Initially hidden */
+    }
+
+    .message-container.error {
+        border-color: #e74c3c;
+        color: #e74c3c;
+    }
+
+    .lesson-links.disabled {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const lessonLinks = document.querySelectorAll('.lesson-links');
+        const messageContainer = document.getElementById('message-container');
+
+        lessonLinks.forEach(link => {
+            link.addEventListener('click', function(event) {
+                const lessonIndex = parseInt(link.getAttribute('data-lesson-index'), 10);
+                const chapterIndex = parseInt(link.getAttribute('data-chapter-index'), 10);
+                const previousLessonComplete = link.getAttribute('data-previous-lesson-complete') === 'True';
+                const currentLessonComplete = link.querySelector('.lesson-progress-tick').classList.contains('hide') === false;
+                const isActiveLesson = link.classList.contains('active-lesson');
+
+                if (chapterIndex === 0 && lessonIndex === 0) {
+                    return;
+                }
+
+                if (currentLessonComplete) {
+                    return;
+                }
+
+                // If it's the first lesson of a new chapter, check if the previous chapter is complete
+                if (lessonIndex === 0 && chapterIndex > 0) {
+                    const previousChapterIndex = chapterIndex - 1;
+                    const previousChapterLessons = document.querySelectorAll(`.chapter-parent[data-chapter="${previousChapterIndex}"] .lesson-info`);
+                    let previousChapterComplete = true;
+                    
+                    // Check if all lessons in the previous chapter are complete
+                    previousChapterLessons.forEach(lesson => {
+                        if (!lesson.getAttribute('data-previous-lesson-complete')) {
+                            previousChapterComplete = false;
+                        }
+                    });
+
+                    if (!previousChapterComplete) {
+                        event.preventDefault();
+                        messageContainer.textContent = 'You must complete the previous chapter before proceeding.';
+                        messageContainer.classList.add('error');
+                        messageContainer.style.display = 'block';
+                        return;
+                    }
+                }
+
+                if (previousLessonComplete || isActiveLesson) {
+                    return;
+                }
+
+                event.preventDefault();
+                messageContainer.textContent = 'You must complete the previous lesson before proceeding.';
+                messageContainer.classList.add('error');
+                messageContainer.style.display = 'block';
+            });
+        });
+    });
+</script>
+

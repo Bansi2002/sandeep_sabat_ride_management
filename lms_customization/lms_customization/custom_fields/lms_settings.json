@@ -1,0 +1,12 @@
+{
+    "LMS Settings": [
+        {
+        "fieldname": "course_updation",
+        "fieldtype": "Link",
+        "insert_after": "assignment_submission_template",
+        "label": "Coures updation Email Template",
+        "options": "Email Template",
+        "module": "LMS Customization"
+        }
+    ]
+}

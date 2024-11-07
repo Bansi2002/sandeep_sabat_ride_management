@@ -1,0 +1,22 @@
+{
+    "LMS Enrollment": [
+        {
+        "fieldname": "course_name",
+        "fieldtype": "Data",
+        "insert_after": "course",
+        "label": "Course Name",
+        "hidden":1,
+        "fetch_from":"course.title",
+        "module": "LMS Customization"
+        },
+
+        {
+        "fieldname": "completion_date",
+        "fieldtype": "Date",
+        "insert_after": "progress",
+        "label": "Course Completion Date",
+        "read_only":1,
+        "module": "LMS Customization"
+        }
+    ]
+}

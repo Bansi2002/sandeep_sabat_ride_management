@@ -1,0 +1,30 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2024-06-18 11:55:17.949512",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "EHC Logo",
+ "letterhead": null,
+ "modified": "2024-06-18 11:55:31.896674",
+ "modified_by": "Administrator",
+ "module": "Lms Customization",
+ "name": "Number of users per course",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "LMS Course",
+ "report_name": "Number of users per course",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Course Creator"
+  }
+ ]
+}

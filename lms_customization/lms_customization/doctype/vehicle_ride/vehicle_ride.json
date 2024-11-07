@@ -1,0 +1,69 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "prompt",
+ "creation": "2024-11-07 16:49:41.231001",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "make",
+  "type",
+  "column_break_chyv",
+  "price_per_km",
+  "image"
+ ],
+ "fields": [
+  {
+   "fieldname": "make",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Make"
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Type"
+  },
+  {
+   "fieldname": "column_break_chyv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "price_per_km",
+   "fieldtype": "Currency",
+   "label": "Price per KM"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  }
+ ],
+ "image_field": "image",
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-11-07 17:25:37.795687",
+ "modified_by": "Administrator",
+ "module": "Lms Customization",
+ "name": "Vehicle Ride",
+ "naming_rule": "Set by user",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

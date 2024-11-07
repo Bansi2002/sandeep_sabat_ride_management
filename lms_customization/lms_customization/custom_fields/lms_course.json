@@ -1,0 +1,20 @@
+{
+    "LMS Course": [
+        {
+        "fieldname": "custom_lms_category",
+        "fieldtype": "Link",
+        "insert_after": "image",
+        "label": "LMS Category",
+        "options": "LMS Category",
+        "module": "LMS Customization"
+        },
+        {
+        "fieldname": "custom_department",
+        "fieldtype": "Link",
+        "insert_after": "status",
+        "label": "Department",
+        "options": "Department",
+        "module": "LMS Customization"
+        }
+    ]
+}
